@@ -1,0 +1,17 @@
+users:
+  - user:
+      # 登陆账号：邮箱或者手机号:字符串
+      username: '16733208014'
+      # 账号密码：字符串
+      password: '16733208014'
+      # 班级，请自行打开批改网，看看自己的班级全称：字符串
+      class_name:
+      # 作文号，支持多篇作文并发，pids len ∈[1,∞）List[str]
+      pids: [ '2107818' ]
+      # 接收汇报的邮箱
+      email: 'xyh.hainanu@qq.com'
+#  - user:
+#      username: ''
+#      password: ''
+#      class_name:
+#      pids: [ '2107718' ]
