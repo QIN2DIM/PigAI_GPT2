@@ -1,7 +1,8 @@
 from gevent import monkey
 
 monkey.patch_all()
-
+import yaml
+import sys
 import os
 import re
 import csv
@@ -26,7 +27,7 @@ from selenium.common.exceptions import (
 )
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
-from config import *
+from config import logger, DIR_PAPER_SCORE, PATH_ACTION_MEMORY, PATH_CONFIG
 
 
 class ActionTraceSpider:
@@ -245,7 +246,7 @@ class ActionTraceSpider:
 
         try:
             with open(
-                    PATH_ACTION_MEMORY, "a", encoding="utf8", newline="", errors="ignore"
+                PATH_ACTION_MEMORY, "a", encoding="utf8", newline="", errors="ignore"
             ) as f:
                 writer = csv.writer(f)
 

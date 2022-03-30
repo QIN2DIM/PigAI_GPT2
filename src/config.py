@@ -1,6 +1,5 @@
-import os.path
+import os
 import sys
-from os.path import join, dirname
 
 import yaml
 from loguru import logger
@@ -43,28 +42,28 @@ TEXT_LENGTH = 320
 # ---------------------------------------------------
 
 # 工程根目录::Windows10写法
-PROJECT_ROOT = dirname(__file__)
+PROJECT_ROOT = os.path.dirname(__file__)
 
 # 数据文件路径
-PROJECT_DATABASE = join(PROJECT_ROOT, "database")
+PROJECT_DATABASE = os.path.join(PROJECT_ROOT, "database")
 
 # 用户信息配置文件
-PATH_CONFIG = join(PROJECT_ROOT, "config.yaml")
+PATH_CONFIG = os.path.join(PROJECT_ROOT, "config.yaml")
 
 # 操作历史
-PATH_ACTION_MEMORY = join(PROJECT_DATABASE, "action_history.csv")
+PATH_ACTION_MEMORY = os.path.join(PROJECT_DATABASE, "action_history.csv")
 
 # 提交结果持久化目录（用于存放.mhtml文件）
-DIR_PAPER_SCORE = join(PROJECT_DATABASE, "paper_score")
+DIR_PAPER_SCORE = os.path.join(PROJECT_DATABASE, "paper_score")
 
 # 替代方案: 语料集
-DIR_FAKE_CORPUS = join(PROJECT_DATABASE, "fake_corpus")
-PATH_FAKE_CORPUS = join(DIR_FAKE_CORPUS, "Beyond Good and Evil.txt")
+DIR_FAKE_CORPUS = os.path.join(PROJECT_DATABASE, "fake_corpus")
+PATH_FAKE_CORPUS = os.path.join(DIR_FAKE_CORPUS, "Beyond Good and Evil.txt")
 
 # 日志路径
-ROOT_DIR_LOGS = join(PROJECT_DATABASE, "logs")
-logger.add(join(ROOT_DIR_LOGS, "runtime.log"), level="DEBUG", encoding="utf8")
-logger.add(join(ROOT_DIR_LOGS, "error.log"), encoding="utf8")
+ROOT_DIR_LOGS = os.path.join(PROJECT_DATABASE, "logs")
+logger.add(os.path.join(ROOT_DIR_LOGS, "runtime.log"), level="DEBUG", encoding="utf8")
+logger.add(os.path.join(ROOT_DIR_LOGS, "error.log"), encoding="utf8")
 
 # 路径补全
 for _trace in [PROJECT_DATABASE, DIR_PAPER_SCORE, DIR_FAKE_CORPUS]:
