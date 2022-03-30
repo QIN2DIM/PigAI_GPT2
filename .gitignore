@@ -123,3 +123,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+.idea
+src/config.yaml
+src/database/logs/
+src/database/cookies.txt
+src/database/action_history.csv
+tests
+src/database/paper_score
