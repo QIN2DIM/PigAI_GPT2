@@ -11,41 +11,40 @@
 
 > 项目依赖 google-chrome 运行，请确保你的计算机已装有谷歌浏览器。
 
-1. 配置启动参数
+1. 拉取 PyPi Package
 
-    直接运行 `main.py` 初始化项目，在 `/src/config.yaml` 中配置账号信息。
+   ```bash
+   pip install pigai-gpt2
+   ```
 
-    - 必须填写用户名、密码与作文号，信息填写有误或残缺将无法正常启动项目；
-    - `class_name` 为可选项，班级名不存在不影响作文提交，只是成绩不记录排行榜。
+2. 跨越次元的相遇
 
-    ```yaml
-    users:
-      - user:
-          # 登陆账号：邮箱或者手机号:字符串
-          username: 'your username'
-          # 账号密码：字符串
-          password: 'your password'
-          # 班级，请自行打开批改网，看看自己的班级全称
-          class_name: your class name
-          # 作文号，支持多篇作文并发，pids len ∈[1,∞) List[str]
-          pids: [ '1586732' ]
-    ```
-
-2. 确保网络通畅，拉取项目第三方依赖
-
-    ```shell
-    # PigAI_GPT2/
-    pip install -r requirements.txt
-    ```
-
-3. 运行项目
-
-    进入到项目下的 `src/` 目录执行如下指令，或直接运行 `main.py `。
-
-    ```bash
-    # PigAI_GPT2/src
-    python main.py
-    ```
+   ```python
+   from typing import Union, List
+   
+   from pigai import runner
+   
+   # [√] 账号信息
+   username, password = "", ""
+   # [√] 作文号
+   pids: Union[str, List[str]] = ["2107818"]
+   # [*] 班级名全称 错误或不存在不影响程序运行
+   class_name: str = "春田花花幼稚园"
+   # [*] 文本词汇量 实际生成量会略多于此值
+   content_length: int = 200
+   
+   if __name__ == '__main__':
+       runner(
+           username=username,
+           password=password,
+           pids=pids,
+           class_name=class_name,
+           content_length=content_length,
+           save_action_memory=True,
+           check_result=True
+       )
+   
+   ```
 
 ## Advanced
 
