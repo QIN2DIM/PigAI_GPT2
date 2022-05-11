@@ -24,12 +24,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
-from .exceptions import (
-    LoginTimeoutException,
-    AuthException,
-    OncePaperWarning,
-    PaperNotFoundError,
-)
+from .exceptions import LoginTimeoutException, AuthException, OncePaperWarning, PaperNotFoundError
 from .utils import ToolBox, get_ctx
 
 event_logger_format = (
@@ -40,11 +35,7 @@ event_logger_format = (
 )
 logger.remove()
 logger.add(
-    sink=sys.stdout,
-    colorize=True,
-    level="DEBUG",
-    format=event_logger_format,
-    diagnose=False,
+    sink=sys.stdout, colorize=True, level="DEBUG", format=event_logger_format, diagnose=False
 )
 
 # ---------------------------------------------------
@@ -72,21 +63,13 @@ class CookieManager:
     URL_LOGIN = "http://www.pigai.org/"
     URL_ACCOUNT_PERSONAL = "http://www.pigai.org/index.php?a=modifyPassword&type=t11"
 
-    def __init__(
-        self, username: str, password: str = None, path_ctx_cookies: Optional[str] = None
-    ):
+    def __init__(self, username: str, password: str = None, path_ctx_cookies: Optional[str] = None):
         self.username = username
         self.password = "" if password is None else password
-        self.path_ctx_cookies = (
-            "ctx_cookies.yaml" if path_ctx_cookies is None else path_ctx_cookies
-        )
+        self.path_ctx_cookies = "ctx_cookies.yaml" if path_ctx_cookies is None else path_ctx_cookies
 
     def _t(self) -> str:
-        return (
-            sha256(self.username[-3::-1].encode("utf-8")).hexdigest()
-            if self.username
-            else ""
-        )
+        return sha256(self.username[-3::-1].encode("utf-8")).hexdigest() if self.username else ""
 
     def _login(self, ctx: Chrome) -> None:
         ctx.get(self.URL_LOGIN)
@@ -94,9 +77,9 @@ class CookieManager:
         actions = ActionChains(ctx)
 
         # 输入账号
-        WebDriverWait(ctx, 10).until(
-            EC.presence_of_element_located((By.ID, "username"))
-        ).send_keys(self.username)
+        WebDriverWait(ctx, 10).until(EC.presence_of_element_located((By.ID, "username"))).send_keys(
+            self.username
+        )
 
         # 去除遮挡
         try:
@@ -106,9 +89,9 @@ class CookieManager:
             actions.perform()
 
         # 输入密码
-        WebDriverWait(ctx, 10).until(
-            EC.presence_of_element_located((By.ID, "password"))
-        ).send_keys(self.password)
+        WebDriverWait(ctx, 10).until(EC.presence_of_element_located((By.ID, "password"))).send_keys(
+            self.password
+        )
 
         # 登录
         try:
@@ -168,19 +151,14 @@ class CookieManager:
         headers = {"cookie": ToolBox.transfer_cookies(ctx_cookies)}
         proxies = {"http": None, "https": None}
         response = requests.get(
-            self.URL_ACCOUNT_PERSONAL,
-            headers=headers,
-            allow_redirects=False,
-            proxies=proxies,
+            self.URL_ACCOUNT_PERSONAL, headers=headers, allow_redirects=False, proxies=proxies
         )
 
         if "账号绑定" in response.text:
             return True
         return False
 
-    def refresh_ctx_cookies(
-        self, silence: bool = True, _ctx_session=None
-    ) -> Optional[bool]:
+    def refresh_ctx_cookies(self, silence: bool = True, _ctx_session=None) -> Optional[bool]:
         """
         更新上下文身份信息
 
@@ -208,7 +186,7 @@ class CookieManager:
             else:
                 if "psw_error" in ctx.current_url:
                     raise AuthException("账号信息错误")
-                logger.debug("登录成功")
+                logger.success("Caching identity tokens")
 
         except (AuthException, LoginTimeoutException):
             return False
@@ -287,7 +265,7 @@ class PigAI:
         api.find_element(By.NAME, "rid").send_keys(self.pid)
         api.find_element(By.CLASS_NAME, "sf_right").click()
 
-        logger.debug(f"切换至写作页面 - pid={self.pid}")
+        logger.debug(f"Switch to writing page - pid={self.pid}")
 
     def build_content(self, ctx: Chrome):
         self.wait(ctx, 5, "all")
@@ -303,15 +281,9 @@ class PigAI:
 
     def show_workspace_info(self, api: Chrome):
         try:
-            self.title = api.find_element(By.XPATH, "//input[@id='title']").get_attribute(
-                "value"
-            )
-            info = api.find_element(
-                By.XPATH, "//div[@style]//div[contains(@style,'float:')]"
-            ).text
-            self.stu_num = [
-                i.split(":")[-1] for i in re.split("[，。]", info) if "学号" in i
-            ][0]
+            self.title = api.find_element(By.XPATH, "//input[@id='title']").get_attribute("value")
+            info = api.find_element(By.XPATH, "//div[@style]//div[contains(@style,'float:')]").text
+            self.stu_num = [i.split(":")[-1] for i in re.split("[，。]", info) if "学号" in i][0]
             self.stu_name = api.find_element(By.ID, "pigai_name").text
         except NoSuchElementException as err:
             raise PaperNotFoundError("作文号不存在或作业尚未发布") from err
@@ -320,7 +292,7 @@ class PigAI:
         api.find_element(By.ID, "dafen").click()
         self.smash_the_popup(api, smash_type="alert")
 
-        logger.debug(f"提交文章 - pid={self.pid}")
+        logger.debug(f"Submit the article - pid={self.pid}")
 
     def select_class(self, api: Chrome, class_name: str or bool):
 
@@ -330,9 +302,7 @@ class PigAI:
                 time.sleep(1)
                 api.find_element(By.XPATH, f"//option[@value='{class_name}']").click()
                 time.sleep(1)
-                api.find_element(By.ID, "icibaWinBotton").find_element(
-                    By.TAG_NAME, "input"
-                ).click()
+                api.find_element(By.ID, "icibaWinBotton").find_element(By.TAG_NAME, "input").click()
                 logger.debug("选择班级 - class={}".format(class_name))
             except NoSuchElementException:
                 logger.warning(f"当前作文不支持班级选择或本班级未布置该篇写作训练 - pid={self.pid}")
@@ -342,7 +312,7 @@ class PigAI:
         if smash_type == "alert":
             try:
                 alert = api.switch_to.alert
-                logger.warning(f"处理弹窗信息 - alert=『{alert.text}』")
+                logger.warning(f"Handling popup messages - alert=『{alert.text}』")
                 alert.accept()
             except NoAlertPresentException:
                 pass
@@ -359,9 +329,6 @@ class PigAI:
             return None
 
     def save_action_history(self, api: Chrome):
-        capture_pending = False
-        add_pending = False
-
         # 当前时间
         now_ = str(datetime.now()).split(".")[0]
         # 范式一：数据漏采--token替换
@@ -378,53 +345,33 @@ class PigAI:
                 with open(PATH_ACTION_MEMORY, "w", encoding="utf-8", newline="") as f:
                     writer = csv.writer(f)
                     writer.writerow(
-                        [
-                            "publish_time",
-                            "stu_name",
-                            "stu_num",
-                            "pid",
-                            "title",
-                            "score",
-                            "end_html",
-                        ]
+                        ["publish_time", "stu_name", "stu_num", "pid", "title", "score", "end_html"]
                     )
         except FileNotFoundError as ef:
             logger.exception(ef)
             return None
 
-        try:
-            res = api.execute_cdp_cmd("Page.captureSnapshot", {})
+        actions = ActionChains(api)
+        actions.send_keys(Keys.END)
+        actions.perform()
 
-            with open(filename_mhtml, "w", newline="") as f:
-                html = res.get("data")
-                if html:
-                    f.write(html)
-                    capture_pending = True
-                else:
-                    pass
+        try:
+            content = api.execute_cdp_cmd("Page.captureSnapshot", {}).get("data")
+            with open(filename_mhtml, "w", newline="") as file:
+                if content:
+                    file.write(content)
         finally:
-            task_name = ">>> Task {}: capture end_rid paper score."
-            logger.debug(
-                task_name.format("over")
-                if capture_pending
-                else task_name.format("failed")
-            )
+            logger.debug(f"Paper score - local_path={filename_mhtml}")
 
         try:
-            with open(
-                PATH_ACTION_MEMORY, "a", encoding="utf8", newline="", errors="ignore"
-            ) as f:
+            with open(PATH_ACTION_MEMORY, "a", encoding="utf8", newline="", errors="ignore") as f:
                 writer = csv.writer(f)
 
                 writer.writerow(
                     [now_, stu_name, stu_num, self.pid, self.title, score, filename_mhtml]
                 )
-            add_pending = True
         finally:
-            task_name = ">>> Task {}: update actions history."
-            logger.debug(
-                task_name.format("over") if add_pending else task_name.format("failed")
-            )
+            logger.debug(f"Action history - local_path={PATH_ACTION_MEMORY}")
 
     def check_result(self, ctx: Chrome):
         user = {
@@ -434,7 +381,7 @@ class PigAI:
             "url": ctx.current_url,
         }
         checkout = " ".join([f"{i[0]}={i[1]}" for i in user.items()])
-        logger.debug(f"获取摘要数据 - {checkout}")
+        logger.debug(f"Get job summary - {checkout}")
 
     def run(
         self,
@@ -472,9 +419,10 @@ def _launcher(
     content_length: Optional[int] = 200,
     save_action_memory: Optional[bool] = None,
     check_result: Optional[bool] = None,
+    _silence: Optional[bool] = None,
 ):
     manager = CookieManager(username, password, path_ctx_cookies=PATH_CTX_COOKIES)
-    if manager.refresh_ctx_cookies(silence=False):
+    if manager.refresh_ctx_cookies(silence=_silence):
         ctx_cookies = manager.load_ctx_cookies()
 
         for pid in pids:
@@ -489,7 +437,7 @@ def _launcher(
                 content=content,
             )
             try:
-                with get_ctx(silence=False) as ctx:
+                with get_ctx(silence=_silence) as ctx:
                     action.run(
                         ctx=ctx,
                         ctx_cookies=ctx_cookies,
@@ -511,6 +459,7 @@ def runner(
     content_length: Optional[int] = 200,
     save_action_memory: Optional[bool] = None,
     check_result: Optional[bool] = None,
+    _silence: Optional[bool] = True,
 ):
     """
 
@@ -521,6 +470,7 @@ def runner(
     :param check_result: 输出执行结果，默认 False。
     :param save_action_memory: 是否存储操作历史，默认 False。
     :param content_length: 文章长度，默认 200。
+    :param _silence:
     """
     if not class_name:
         logger.warning("`class_name`识别错误，无法将作文提交至指定群组。")
@@ -541,9 +491,10 @@ def runner(
             content_length=content_length,
             save_action_memory=save_action_memory,
             check_result=check_result,
+            _silence=_silence,
         )
     except requests.exceptions.SSLError as err:
         logger.error(err)
         logger.debug("请执行 `pip install urllib3==1.25.11` 跳过 tls-in-tls 认证；或关闭系统代理后重试")
     else:
-        logger.success("工作栈已释放完毕")
+        logger.success("The work stack has been released")

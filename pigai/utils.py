@@ -22,14 +22,21 @@ class ToolBox:
         # 下载缺失的语料数据集
         # 当缺失 GPT2 生成模型时使用随机种子语料拼凑文章
         if not os.path.exists(path_corpus):
-            print("Downloading corpus...")
-            url = "https://curly-shape-d178.qinse.workers.dev/https://github.com/QIN2DIM/PigAI_GPT2/releases/download/corpus/corpus.yaml"
-            with requests.get(url, stream=True) as response, open(
+            url = "https://gitee.com/yaoqinse/workspace/attach_files/1057496/download/corpus.yaml"
+            proxies = {"http": None, "https": None}
+            print(f"Pull corpus - url={url}")
+
+            with requests.get(url, stream=True, proxies=proxies) as response, open(
                 path_corpus, "wb"
             ) as file:
-                for chunk in response.iter_content(chunk_size=1024):
-                    if chunk:
-                        file.write(chunk)
+                chunk_size = 1024
+                content_size = int(response.headers["content-length"])
+                for chunk in response.iter_content(chunk_size=chunk_size):
+                    file.write(chunk)
+                    content_size -= chunk_size
+                    content_size = 0 if content_size < 0 else content_size
+                    print(f"\rDownloading corpus... - content_remaining={content_size}", end="")
+                print("")
 
         # 读取预料数据集
         with open(path_corpus, "r", encoding="utf8") as file:
@@ -67,8 +74,7 @@ class ToolBox:
         """
         if isinstance(api_cookies, str):
             return [
-                {"name": i.split("=")[0], "value": i.split("=")[1]}
-                for i in api_cookies.split("; ")
+                {"name": i.split("=")[0], "value": i.split("=")[1]} for i in api_cookies.split("; ")
             ]
         return "; ".join([f"{i['name']}={i['value']}" for i in api_cookies])
 
@@ -81,6 +87,9 @@ def get_ctx(silence: Optional = None):
     options.add_argument("--disk-cache")
     options.add_argument("--lang=zh")
     options.add_argument("--no-proxy-server")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_argument("--disable-javascript")
 
     if silence is True or "linux" in sys.platform:
         options.add_argument("--headless")

@@ -17,9 +17,7 @@ setup(
     author="QIN2DIM",
     author_email="qinse.top@foxmail.com",
     description="批改网写作助手，根据配置自动生成并提交英语作文。",
-    long_description=open(
-        os_path.join(this_directory, "README.md"), encoding="utf8"
-    ).read(),
+    long_description=open(os_path.join(this_directory, "README.md"), encoding="utf8").read(),
     long_description_content_type="text/markdown",
     install_requires=[
         "pyyaml~=6.0",
