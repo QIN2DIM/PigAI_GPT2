@@ -7,7 +7,7 @@ import os
 import random
 import sys
 from typing import Optional, Union, List, Dict
-
+from urllib.request import getproxies
 import requests
 import yaml
 from selenium.webdriver import Chrome, ChromeOptions
@@ -16,17 +16,20 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 
 class ToolBox:
+    CDN = "https://dl.capoo.xyz/"
     @staticmethod
     def generate_content(path_corpus: str, content_length: int = 320):
 
         # 下载缺失的语料数据集
         # 当缺失 GPT2 生成模型时使用随机种子语料拼凑文章
         if not os.path.exists(path_corpus):
-            url = "https://gitee.com/yaoqinse/workspace/attach_files/1057496/download/corpus.yaml"
-            proxies = {"http": None, "https": None}
-            print(f"Pull corpus - url={url}")
+            proxies = getproxies()
+            hook_src = "https://github.com/QIN2DIM/PigAI_GPT2/releases/download/corpus/corpus.yaml"
+            if not proxies:
+                hook_src = f"{ToolBox.CDN}{hook_src}"
+            print(f"Pull corpus - url={hook_src}")
 
-            with requests.get(url, stream=True, proxies=proxies) as response, open(
+            with requests.get(hook_src, stream=True, proxies=proxies) as response, open(
                 path_corpus, "wb"
             ) as file:
                 chunk_size = 1024
@@ -35,8 +38,9 @@ class ToolBox:
                     file.write(chunk)
                     content_size -= chunk_size
                     content_size = 0 if content_size < 0 else content_size
-                    print(f"\rDownloading corpus... - content_remaining={content_size}", end="")
+                    print(f"\rDownloading corpus... - progress={content_size}", end="")
                 print("")
+            print("Download completed!")
 
         # 读取预料数据集
         with open(path_corpus, "r", encoding="utf8") as file:

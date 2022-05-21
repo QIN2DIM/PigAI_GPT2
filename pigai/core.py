@@ -10,6 +10,7 @@ from typing import Optional, Union, List
 import requests
 import yaml
 from loguru import logger
+from requests.exceptions import ProxyError, RequestException, SSLError
 from selenium.common.exceptions import (
     NoSuchElementException,
     NoAlertPresentException,
@@ -203,13 +204,13 @@ class PigAI:
     """Selenium action module"""
 
     def __init__(
-        self,
-        username: str,
-        password: str,
-        pid: str,
-        content: str,
-        class_name: str,
-        silence: Optional[bool] = None,
+            self,
+            username: str,
+            password: str,
+            pid: str,
+            content: str,
+            class_name: str,
+            silence: Optional[bool] = None,
     ):
         """
 
@@ -384,11 +385,11 @@ class PigAI:
         logger.debug(f"Get job summary - {checkout}")
 
     def run(
-        self,
-        ctx: Chrome,
-        ctx_cookies: List[dict],
-        save_action_memory: Optional[bool] = True,
-        check_result: Optional[bool] = True,
+            self,
+            ctx: Chrome,
+            ctx_cookies: List[dict],
+            save_action_memory: Optional[bool] = True,
+            check_result: Optional[bool] = True,
     ):
         self._reset_page(ctx, ctx_cookies=ctx_cookies)
 
@@ -412,14 +413,14 @@ class PigAI:
 
 
 def _launcher(
-    username: str,
-    password: str,
-    pids: Union[str, list],
-    class_name: str = None,
-    content_length: Optional[int] = 200,
-    save_action_memory: Optional[bool] = None,
-    check_result: Optional[bool] = None,
-    _silence: Optional[bool] = None,
+        username: str,
+        password: str,
+        pids: Union[str, list],
+        class_name: str = None,
+        content_length: Optional[int] = 200,
+        save_action_memory: Optional[bool] = None,
+        check_result: Optional[bool] = None,
+        _silence: Optional[bool] = None,
 ):
     manager = CookieManager(username, password, path_ctx_cookies=PATH_CTX_COOKIES)
     if manager.refresh_ctx_cookies(silence=_silence):
@@ -452,14 +453,14 @@ def _launcher(
 
 @logger.catch()
 def runner(
-    username: str,
-    password: str,
-    pids: Union[str, list],
-    class_name: str = None,
-    content_length: Optional[int] = 200,
-    save_action_memory: Optional[bool] = None,
-    check_result: Optional[bool] = None,
-    _silence: Optional[bool] = True,
+        username: str,
+        password: str,
+        pids: Union[str, list],
+        class_name: str = None,
+        content_length: Optional[int] = 200,
+        save_action_memory: Optional[bool] = None,
+        check_result: Optional[bool] = None,
+        _silence: Optional[bool] = True,
 ):
     """
 
@@ -493,8 +494,11 @@ def runner(
             check_result=check_result,
             _silence=_silence,
         )
-    except requests.exceptions.SSLError as err:
+    except (ProxyError, SSLError) as err:
         logger.error(err)
         logger.debug("请执行 `pip install urllib3==1.25.11` 跳过 tls-in-tls 认证；或关闭系统代理后重试")
+    except RequestException as err:
+        logger.error(err)
+        logger.debug("请检查网络连接")
     else:
         logger.success("The work stack has been released")
